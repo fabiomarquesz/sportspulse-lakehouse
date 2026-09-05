@@ -197,3 +197,14 @@ Resultado da execução:
 
 ## 👤 Autor
 * **Fabio Marques** — [GitHub](https://github.com/fabiomarquesz)
+
+---
+
+## 📚 Fonte dos Dados & Créditos Científicos
+
+Os dados brutos utilizados neste projeto são provenientes do repositório científico e publicação na **[ScienceDirect](https://www.sciencedirect.com)** (Elsevier *Data in Brief*):
+
+* **Base de Dados**: *SportDB - Sport Cardiorespiratory Database*
+* **Portal / Editora**: [ScienceDirect (Elsevier)](https://www.sciencedirect.com)
+* **Finalidade**: Pesquisa acadêmica e desenvolvimento de soluções tecnológicas para monitoramento fisiológico, biomecânica e telemetria esportiva.
+* **Dispositivo de Aquisição Primário**: Zephyr BioHarness 3.0 (sensores vestíveis de frequência cardíaca, intervalos R-R, frequência respiratória e ECG a 250 Hz).

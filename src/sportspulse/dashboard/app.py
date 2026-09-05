@@ -2,7 +2,6 @@
 Streamlit Interactive Analytical Dashboard for SportsPulse Lakehouse.
 Provides executive summaries, cross-sport comparisons, athlete deep-dives, and 250Hz ECG visualizations.
 """
-
 from pathlib import Path
 
 import duckdb
@@ -52,7 +51,8 @@ menu = st.sidebar.radio(
 
 st.sidebar.markdown("---")
 st.sidebar.info(
-    "💡 **Base de Dados**: SportDB (10 Esportes, 81 Atletas, 126 Sessões, 449k+ segundos de telemetria contínua)."
+    "💡 **Base de Dados**: SportDB (10 Esportes, 81 Atletas, 126 Sessões, 449k+ segundos de telemetria contínua).\n\n"
+    "📚 **Fonte dos Dados**: [ScienceDirect](https://www.sciencedirect.com) (Elsevier)"
 )
 
 # -------------------------------------------------------------
@@ -198,7 +198,7 @@ elif menu == "🫀 Análise de Sessão & Atleta":
                 y=pdf_tel["hr_bpm_smoothed_5s"],
                 mode="lines",
                 name="Frequência Cardíaca (bpm)",
-                line=dict(color="#FF4B4B", width=2),
+                line={"color": "#FF4B4B", "width": 2},
             )
         )
         fig_dual.add_trace(
@@ -208,25 +208,27 @@ elif menu == "🫀 Análise de Sessão & Atleta":
                 mode="lines",
                 name="Taxa Respiratória (rpm)",
                 yaxis="y2",
-                line=dict(color="#00D4B2", width=1.5, dash="dot"),
+                line={"color": "#00D4B2", "width": 1.5, "dash": "dot"},
             )
         )
 
         fig_dual.update_layout(
             title="Comportamento Cardiorrespiratório Contínuo (1 Hz)",
-            xaxis=dict(title="Tempo (segundos)"),
-            yaxis=dict(
-                title="Frequência Cardíaca (bpm)", titlefont=dict(color="#FF4B4B"), tickfont=dict(color="#FF4B4B")
-            ),
-            yaxis2=dict(
-                title="Taxa Respiratória (rpm)",
-                titlefont=dict(color="#00D4B2"),
-                tickfont=dict(color="#00D4B2"),
-                overlaying="y",
-                side="right",
-            ),
+            xaxis={"title": "Tempo (segundos)"},
+            yaxis={
+                "title": "Frequência Cardíaca (bpm)",
+                "titlefont": {"color": "#FF4B4B"},
+                "tickfont": {"color": "#FF4B4B"},
+            },
+            yaxis2={
+                "title": "Taxa Respiratória (rpm)",
+                "titlefont": {"color": "#00D4B2"},
+                "tickfont": {"color": "#00D4B2"},
+                "overlaying": "y",
+                "side": "right",
+            },
             hovermode="x unified",
-            legend=dict(x=0.01, y=0.99),
+            legend={"x": 0.01, "y": 0.99},
         )
         st.plotly_chart(fig_dual, use_container_width=True)
 
@@ -287,7 +289,7 @@ elif menu == "⚡ ECG de Alta Resolução (250Hz)":
             labels={"time_sec": "Tempo (segundos)", "ecg_mv": "Sinal Bioelétrico ECG (mV)"},
             title=f"Traçado de ECG ({window_duration}s @ 250 Hz) - {sel_sport_code} {sel_subject} {sel_session}",
         )
-        fig_ecg.update_traces(line=dict(color="#FF1744", width=1.5))
+        fig_ecg.update_traces(line={"color": "#FF1744", "width": 1.5})
         st.plotly_chart(fig_ecg, use_container_width=True)
     else:
         st.warning("Arquivo de ECG individual não localizado nesta partição.")
