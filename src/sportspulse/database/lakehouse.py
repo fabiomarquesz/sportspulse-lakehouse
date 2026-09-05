@@ -2,8 +2,9 @@
 DuckDB Lakehouse Storage Engine and Analytical Views.
 Manages Gold table storage, SQL queries, and zero-copy Parquet interoperability.
 """
+
 from pathlib import Path
-from typing import Dict, Any, Optional
+
 import duckdb
 import polars as pl
 from rich.console import Console
@@ -17,7 +18,7 @@ class LakehouseDB:
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self.conn = duckdb.connect(str(self.db_path))
 
-    def init_gold_tables(self, gold_tables: Dict[str, pl.DataFrame]) -> None:
+    def init_gold_tables(self, gold_tables: dict[str, pl.DataFrame]) -> None:
         """
         Creates physical tables and views in DuckDB from Gold DataFrames.
         """
@@ -35,7 +36,7 @@ class LakehouseDB:
         # 1. Cross-sport intensity comparison
         self.conn.execute("""
             CREATE OR REPLACE VIEW vw_sport_intensity_comparison AS
-            SELECT 
+            SELECT
                 s.sport_code,
                 s.sport_name,
                 s.sport_category,
@@ -58,7 +59,7 @@ class LakehouseDB:
         # 2. Athlete comprehensive profile and fitness load
         self.conn.execute("""
             CREATE OR REPLACE VIEW vw_athlete_summary AS
-            SELECT 
+            SELECT
                 a.athlete_key,
                 a.sport_code,
                 s.sport_name,
@@ -84,7 +85,7 @@ class LakehouseDB:
         # 3. High intensity ranking
         self.conn.execute("""
             CREATE OR REPLACE VIEW vw_high_intensity_sessions AS
-            SELECT 
+            SELECT
                 f.session_key,
                 s.sport_name,
                 f.subject_id,

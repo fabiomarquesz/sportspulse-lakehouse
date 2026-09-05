@@ -1,15 +1,16 @@
 """
 SportsPulse Lakehouse: Main CLI and Pipeline Orchestrator.
 """
-import sys
+
 import subprocess
+
 import typer
 from rich.console import Console
 from rich.panel import Panel
 
+from sportspulse.analytics.gold_pipeline import run_gold_pipeline
 from sportspulse.ingestion.bronze_pipeline import run_bronze_ingestion
 from sportspulse.processing.silver_pipeline import run_silver_pipeline
-from sportspulse.analytics.gold_pipeline import run_gold_pipeline
 
 app = typer.Typer(
     help="SportsPulse Lakehouse: End-to-End Pipeline for Cardiorespiratory Telemetry (SportDB)",
@@ -52,10 +53,12 @@ def analytics(
 @app.command()
 def run_all():
     """Executa o Pipeline Completo de Ponta a Ponta (Bronze -> Silver -> Gold)."""
-    console.print(Panel.fit(
-        "[bold cyan]🏃 INICIANDO PIPELINE COMPLETO SPORTSPULSE LAKEHOUSE 🏃[/bold cyan]\n"
-        "[dim]Camadas: Bronze (Ingestão) ➔ Silver (Tratamento) ➔ Gold (Analytics & DuckDB)[/dim]"
-    ))
+    console.print(
+        Panel.fit(
+            "[bold cyan]🏃 INICIANDO PIPELINE COMPLETO SPORTSPULSE LAKEHOUSE 🏃[/bold cyan]\n"
+            "[dim]Camadas: Bronze (Ingestão) ➔ Silver (Tratamento) ➔ Gold (Analytics & DuckDB)[/dim]"
+        )
+    )
     # 1. Bronze
     res_b = run_bronze_ingestion()
     # 2. Silver
@@ -63,13 +66,15 @@ def run_all():
     # 3. Gold
     res_g = run_gold_pipeline()
 
-    console.print(Panel.fit(
-        f"[bold green]✅ PIPELINE FINALIZADO COM SUCESSO![/bold green]\n\n"
-        f"• Sessões Processadas: [bold]{res_b['total_sessions']}[/bold]\n"
-        f"• Linhas de Telemetria (1Hz): [bold]{res_s['silver_rows']:,}[/bold]\n"
-        f"• Tabelas Gold no DuckDB: [bold]{res_g['gold_tables_count']}[/bold]\n"
-        f"• Para abrir o dashboard: [yellow]uv run python main.py dashboard[/yellow]"
-    ))
+    console.print(
+        Panel.fit(
+            f"[bold green]✅ PIPELINE FINALIZADO COM SUCESSO![/bold green]\n\n"
+            f"• Sessões Processadas: [bold]{res_b['total_sessions']}[/bold]\n"
+            f"• Linhas de Telemetria (1Hz): [bold]{res_s['silver_rows']:,}[/bold]\n"
+            f"• Tabelas Gold no DuckDB: [bold]{res_g['gold_tables_count']}[/bold]\n"
+            f"• Para abrir o dashboard: [yellow]uv run python main.py dashboard[/yellow]"
+        )
+    )
 
 
 @app.command()

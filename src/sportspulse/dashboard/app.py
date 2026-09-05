@@ -2,12 +2,14 @@
 Streamlit Interactive Analytical Dashboard for SportsPulse Lakehouse.
 Provides executive summaries, cross-sport comparisons, athlete deep-dives, and 250Hz ECG visualizations.
 """
-import streamlit as st
-import polars as pl
+
+from pathlib import Path
+
+import duckdb
 import plotly.express as px
 import plotly.graph_objects as go
-from pathlib import Path
-import duckdb
+import polars as pl
+import streamlit as st
 
 # Page configuration
 st.set_page_config(
@@ -65,7 +67,7 @@ if menu == "📊 Visão Executiva & Modalidades":
     # Top KPIs
     df_sessions = run_query("SELECT * FROM fact_training_session")
     df_athletes = run_query("SELECT * FROM dim_athlete")
-    
+
     total_sessions = len(df_sessions)
     total_athletes = len(df_athletes)
     total_hours = round(df_sessions["duration_minutes"].sum() / 60.0, 1)
@@ -94,7 +96,11 @@ if menu == "📊 Visão Executiva & Modalidades":
             y="avg_banister_trimp",
             color="avg_hr_bpm",
             color_continuous_scale="Reds",
-            labels={"avg_banister_trimp": "TRIMP Médio (Pontos)", "sport_name": "Modalidade", "avg_hr_bpm": "FC Média (bpm)"},
+            labels={
+                "avg_banister_trimp": "TRIMP Médio (Pontos)",
+                "sport_name": "Modalidade",
+                "avg_hr_bpm": "FC Média (bpm)",
+            },
             title="Intensidade Fisiológica Relativa por Modalidade",
         )
         fig_trimp.update_layout(xaxis_tickangle=-45)
@@ -132,19 +138,30 @@ elif menu == "🫀 Análise de Sessão & Atleta":
         sel_sport_code = sports_map[sel_sport_name]
 
     with c_sel2:
-        df_subjs = run_query(f"SELECT DISTINCT subject_id FROM fact_training_session WHERE sport_code = '{sel_sport_code}' ORDER BY subject_id")
+        df_subjs = run_query(
+            f"SELECT DISTINCT subject_id FROM fact_training_session WHERE sport_code = '{sel_sport_code}' ORDER BY subject_id"
+        )
         subjs_list = df_subjs["subject_id"].to_list()
         sel_subject = st.selectbox("Escolha o Atleta (ID):", subjs_list)
 
     with c_sel3:
-        df_sess = run_query(f"SELECT session_id, duration_minutes, banister_trimp FROM fact_training_session WHERE sport_code = '{sel_sport_code}' AND subject_id = '{sel_subject}' ORDER BY session_id")
-        sess_map = {f"{r['session_id']} ({r['duration_minutes']} min | TRIMP: {r['banister_trimp']})": r["session_id"] for r in df_sess.iter_rows(named=True)}
+        df_sess = run_query(
+            f"SELECT session_id, duration_minutes, banister_trimp FROM fact_training_session WHERE sport_code = '{sel_sport_code}' AND subject_id = '{sel_subject}' ORDER BY session_id"
+        )
+        sess_map = {
+            f"{r['session_id']} ({r['duration_minutes']} min | TRIMP: {r['banister_trimp']})": r["session_id"]
+            for r in df_sess.iter_rows(named=True)
+        }
         sel_sess_label = st.selectbox("Escolha a Sessão (CRD):", list(sess_map.keys()))
         sel_session = sess_map[sel_sess_label]
 
     # Athlete Info Box
-    ath_info = run_query(f"SELECT * FROM dim_athlete WHERE sport_code = '{sel_sport_code}' AND subject_id = '{sel_subject}'")
-    sess_info = run_query(f"SELECT * FROM fact_training_session WHERE sport_code = '{sel_sport_code}' AND subject_id = '{sel_subject}' AND session_id = '{sel_session}'")
+    ath_info = run_query(
+        f"SELECT * FROM dim_athlete WHERE sport_code = '{sel_sport_code}' AND subject_id = '{sel_subject}'"
+    )
+    sess_info = run_query(
+        f"SELECT * FROM fact_training_session WHERE sport_code = '{sel_sport_code}' AND subject_id = '{sel_subject}' AND session_id = '{sel_session}'"
+    )
 
     if len(ath_info) > 0 and len(sess_info) > 0:
         a_row = ath_info.row(0, named=True)
@@ -162,7 +179,7 @@ elif menu == "🫀 Análise de Sessão & Atleta":
 
     # Time Series of Session (1Hz)
     st.subheader(f"📈 Série Temporal da Sessão: {sel_sport_code} - {sel_subject} - {sel_session}")
-    
+
     df_telemetry_sess = run_query(f"""
         SELECT time_sec, phase_name, phase_category, hr_bpm, hr_bpm_smoothed_5s, br_rpm, rr_ms, hr_reserve_pct
         FROM fact_telemetry_1s
@@ -172,30 +189,42 @@ elif menu == "🫀 Análise de Sessão & Atleta":
 
     if len(df_telemetry_sess) > 0:
         pdf_tel = df_telemetry_sess.to_pandas()
-        
+
         # Dual-axis chart: HR & BR
         fig_dual = go.Figure()
-        fig_dual.add_trace(go.Scatter(
-            x=pdf_tel["time_sec"],
-            y=pdf_tel["hr_bpm_smoothed_5s"],
-            mode="lines",
-            name="Frequência Cardíaca (bpm)",
-            line=dict(color="#FF4B4B", width=2),
-        ))
-        fig_dual.add_trace(go.Scatter(
-            x=pdf_tel["time_sec"],
-            y=pdf_tel["br_rpm"],
-            mode="lines",
-            name="Taxa Respiratória (rpm)",
-            yaxis="y2",
-            line=dict(color="#00D4B2", width=1.5, dash="dot"),
-        ))
+        fig_dual.add_trace(
+            go.Scatter(
+                x=pdf_tel["time_sec"],
+                y=pdf_tel["hr_bpm_smoothed_5s"],
+                mode="lines",
+                name="Frequência Cardíaca (bpm)",
+                line=dict(color="#FF4B4B", width=2),
+            )
+        )
+        fig_dual.add_trace(
+            go.Scatter(
+                x=pdf_tel["time_sec"],
+                y=pdf_tel["br_rpm"],
+                mode="lines",
+                name="Taxa Respiratória (rpm)",
+                yaxis="y2",
+                line=dict(color="#00D4B2", width=1.5, dash="dot"),
+            )
+        )
 
         fig_dual.update_layout(
             title="Comportamento Cardiorrespiratório Contínuo (1 Hz)",
             xaxis=dict(title="Tempo (segundos)"),
-            yaxis=dict(title="Frequência Cardíaca (bpm)", titlefont=dict(color="#FF4B4B"), tickfont=dict(color="#FF4B4B")),
-            yaxis2=dict(title="Taxa Respiratória (rpm)", titlefont=dict(color="#00D4B2"), tickfont=dict(color="#00D4B2"), overlaying="y", side="right"),
+            yaxis=dict(
+                title="Frequência Cardíaca (bpm)", titlefont=dict(color="#FF4B4B"), tickfont=dict(color="#FF4B4B")
+            ),
+            yaxis2=dict(
+                title="Taxa Respiratória (rpm)",
+                titlefont=dict(color="#00D4B2"),
+                tickfont=dict(color="#00D4B2"),
+                overlaying="y",
+                side="right",
+            ),
             hovermode="x unified",
             legend=dict(x=0.01, y=0.99),
         )
@@ -225,10 +254,14 @@ elif menu == "⚡ ECG de Alta Resolução (250Hz)":
         sel_sport_name = st.selectbox("Modalidade:", list(sports_map.keys()), key="ecg_sport")
         sel_sport_code = sports_map[sel_sport_name]
     with c2:
-        df_subjs = run_query(f"SELECT DISTINCT subject_id FROM fact_training_session WHERE sport_code = '{sel_sport_code}' ORDER BY subject_id")
+        df_subjs = run_query(
+            f"SELECT DISTINCT subject_id FROM fact_training_session WHERE sport_code = '{sel_sport_code}' ORDER BY subject_id"
+        )
         sel_subject = st.selectbox("Atleta (ID):", df_subjs["subject_id"].to_list(), key="ecg_subj")
     with c3:
-        df_sess = run_query(f"SELECT session_id FROM fact_training_session WHERE sport_code = '{sel_sport_code}' AND subject_id = '{sel_subject}' ORDER BY session_id")
+        df_sess = run_query(
+            f"SELECT session_id FROM fact_training_session WHERE sport_code = '{sel_sport_code}' AND subject_id = '{sel_subject}' ORDER BY session_id"
+        )
         sel_session = st.selectbox("Sessão (CRD):", df_sess["session_id"].to_list(), key="ecg_sess")
 
     ecg_file = BRONZE_DIR / "ecg_250hz" / f"sport={sel_sport_code}" / f"{sel_subject}_{sel_session}_ecg.parquet"

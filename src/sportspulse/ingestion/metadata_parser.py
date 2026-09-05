@@ -2,12 +2,12 @@
 Metadata Parser for SportDB (Dem.txt and TrNote.txt).
 Extracts demographic attributes and training phase time intervals with explicit schema enforcement.
 """
-from dataclasses import dataclass
-from pathlib import Path
-from typing import List, Dict, Any, Optional
-import re
-import polars as pl
 
+import re
+from pathlib import Path
+from typing import Any
+
+import polars as pl
 
 DEMOGRAPHICS_SCHEMA = {
     "sport_code": pl.String,
@@ -51,7 +51,7 @@ def time_str_to_seconds(time_str: str) -> int:
     return 0
 
 
-def clean_val(val: str) -> Optional[float]:
+def clean_val(val: str) -> float | None:
     """Helper to convert numeric strings or 'NA' to Optional[float]."""
     val = val.strip().replace("\ufeff", "")
     if not val or val.upper() in ("NA", "NAN", "NULL", "NONE", "-"):
@@ -90,7 +90,7 @@ def parse_dem_file(file_path: Path | str, sport_code: str, subject_id: str, sess
 
     sex_raw = clean_val(row_dict.get("Sex", "NA"))
     sex_desc = "Male" if sex_raw == 1.0 else ("Female" if sex_raw == 2.0 else "Unknown")
-    
+
     age = clean_val(row_dict.get("Age", "NA"))
     weight = clean_val(row_dict.get("Weight", "NA"))
     height = clean_val(row_dict.get("Height", "NA"))
@@ -137,8 +137,8 @@ def parse_trnote_file(file_path: Path | str, sport_code: str, subject_id: str, s
     )
     none_pattern = re.compile(r"^([A-Za-z0-9_\s\-\(\)]+?)\s*:\s*(?:none|null|na)", re.IGNORECASE)
 
-    records: List[Dict[str, Any]] = []
-    
+    records: list[dict[str, Any]] = []
+
     for line in lines:
         m_phase = phase_pattern.search(line)
         m_none = none_pattern.search(line)
@@ -147,54 +147,60 @@ def parse_trnote_file(file_path: Path | str, sport_code: str, subject_id: str, s
             phase_name = m_phase.group(1).strip()
             start_str = m_phase.group(2).strip()
             end_str = m_phase.group(3).strip()
-            
+
             start_sec = time_str_to_seconds(start_str)
             end_sec = time_str_to_seconds(end_str)
             duration_sec = max(0, end_sec - start_sec)
-            
-            records.append({
-                "sport_code": sport_code,
-                "subject_id": subject_id,
-                "session_id": session_id,
-                "phase_name": phase_name,
-                "start_time_str": start_str,
-                "end_time_str": end_str,
-                "start_time_sec": start_sec,
-                "end_time_sec": end_sec,
-                "duration_sec": duration_sec,
-                "is_active": True,
-                "notes": line,
-            })
+
+            records.append(
+                {
+                    "sport_code": sport_code,
+                    "subject_id": subject_id,
+                    "session_id": session_id,
+                    "phase_name": phase_name,
+                    "start_time_str": start_str,
+                    "end_time_str": end_str,
+                    "start_time_sec": start_sec,
+                    "end_time_sec": end_sec,
+                    "duration_sec": duration_sec,
+                    "is_active": True,
+                    "notes": line,
+                }
+            )
         elif m_none:
             phase_name = m_none.group(1).strip()
-            records.append({
-                "sport_code": sport_code,
-                "subject_id": subject_id,
-                "session_id": session_id,
-                "phase_name": phase_name,
-                "start_time_str": None,
-                "end_time_str": None,
-                "start_time_sec": None,
-                "end_time_sec": None,
-                "duration_sec": 0,
-                "is_active": False,
-                "notes": line,
-            })
+            records.append(
+                {
+                    "sport_code": sport_code,
+                    "subject_id": subject_id,
+                    "session_id": session_id,
+                    "phase_name": phase_name,
+                    "start_time_str": None,
+                    "end_time_str": None,
+                    "start_time_sec": None,
+                    "end_time_sec": None,
+                    "duration_sec": 0,
+                    "is_active": False,
+                    "notes": line,
+                }
+            )
 
     if not records:
         full_text = " | ".join(lines) if lines else "None"
-        records.append({
-            "sport_code": sport_code,
-            "subject_id": subject_id,
-            "session_id": session_id,
-            "phase_name": "Full Session",
-            "start_time_str": None,
-            "end_time_str": None,
-            "start_time_sec": 0,
-            "end_time_sec": None,
-            "duration_sec": None,
-            "is_active": True,
-            "notes": full_text,
-        })
+        records.append(
+            {
+                "sport_code": sport_code,
+                "subject_id": subject_id,
+                "session_id": session_id,
+                "phase_name": "Full Session",
+                "start_time_str": None,
+                "end_time_str": None,
+                "start_time_sec": 0,
+                "end_time_sec": None,
+                "duration_sec": None,
+                "is_active": True,
+                "notes": full_text,
+            }
+        )
 
     return pl.DataFrame(records, schema=TRAINING_PHASES_SCHEMA)

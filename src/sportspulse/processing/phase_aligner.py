@@ -2,9 +2,10 @@
 Training Phase Alignment Engine for Silver Layer.
 Synchronizes 1Hz telemetry with protocol phases (Resting, Warm-up, Exercise, Recovery).
 """
-from typing import Dict, Any, List, Optional
-import polars as pl
 
+from typing import Any
+
+import polars as pl
 
 PHASE_CATEGORY_MAP = {
     "resting": "Rest",
@@ -29,7 +30,7 @@ PHASE_CATEGORY_MAP = {
 }
 
 
-def categorize_phase(phase_name: Optional[str]) -> str:
+def categorize_phase(phase_name: str | None) -> str:
     """Classifies granular exercise names into standardized physiological phase categories."""
     if not phase_name:
         return "Unknown"
@@ -59,20 +60,22 @@ def align_telemetry_with_phases(
     )
 
     # Convert to Python dict lookup for blazing fast alignment per session
-    phase_lookup: Dict[str, List[Dict[str, Any]]] = {}
+    phase_lookup: dict[str, list[dict[str, Any]]] = {}
     for row in active_phases.iter_rows(named=True):
         key = f"{row['sport_code']}_{row['subject_id']}_{row['session_id']}"
         if key not in phase_lookup:
             phase_lookup[key] = []
-        phase_lookup[key].append({
-            "phase_name": row["phase_name"],
-            "start_sec": row["start_time_sec"],
-            "end_sec": row["end_time_sec"],
-            "phase_category": categorize_phase(row["phase_name"]),
-        })
+        phase_lookup[key].append(
+            {
+                "phase_name": row["phase_name"],
+                "start_sec": row["start_time_sec"],
+                "end_sec": row["end_time_sec"],
+                "phase_category": categorize_phase(row["phase_name"]),
+            }
+        )
 
     # Vectorized matching via Polars struct mapping / function
-    def match_phase_row(row_dict: Dict[str, Any]) -> Dict[str, Any]:
+    def match_phase_row(row_dict: dict[str, Any]) -> dict[str, Any]:
         key = f"{row_dict['sport_code']}_{row_dict['subject_id']}_{row_dict['session_id']}"
         t = row_dict["time_sec"]
         phases = phase_lookup.get(key, [])
@@ -116,8 +119,10 @@ def align_telemetry_with_phases(
             phase_categories.append("Main_Workout")
             phase_elapsed.append(t)
 
-    return df_telemetry.with_columns([
-        pl.Series("phase_name", phase_names, dtype=pl.String),
-        pl.Series("phase_category", phase_categories, dtype=pl.String),
-        pl.Series("phase_elapsed_sec", phase_elapsed, dtype=pl.Int32),
-    ])
+    return df_telemetry.with_columns(
+        [
+            pl.Series("phase_name", phase_names, dtype=pl.String),
+            pl.Series("phase_category", phase_categories, dtype=pl.String),
+            pl.Series("phase_elapsed_sec", phase_elapsed, dtype=pl.Int32),
+        ]
+    )

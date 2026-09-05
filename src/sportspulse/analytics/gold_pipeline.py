@@ -2,11 +2,13 @@
 Gold Analytics & Lakehouse Pipeline for SportsPulse.
 Builds Star Schema dimensional tables, calculates HRV and TRIMP physiological metrics, and initializes DuckDB.
 """
-from pathlib import Path
-from typing import Dict, Any, Optional
+
 import time
-import yaml
+from pathlib import Path
+from typing import Any
+
 import polars as pl
+import yaml
 from rich.console import Console
 from rich.table import Table
 
@@ -16,16 +18,16 @@ from sportspulse.database.lakehouse import LakehouseDB
 console = Console()
 
 
-def load_yaml(file_path: str) -> Dict[str, Any]:
+def load_yaml(file_path: str) -> dict[str, Any]:
     with open(file_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
 def run_gold_pipeline(
-    silver_dir: Optional[str] = None,
-    gold_dir: Optional[str] = None,
-    db_path: Optional[str] = None,
-) -> Dict[str, Any]:
+    silver_dir: str | None = None,
+    gold_dir: str | None = None,
+    db_path: str | None = None,
+) -> dict[str, Any]:
     """
     Executes the Gold Layer analytics pipeline:
     1. Reads Silver Parquet tables
@@ -42,7 +44,7 @@ def run_gold_pipeline(
     g_dir.mkdir(parents=True, exist_ok=True)
     db_file = db_path or settings["paths"]["database_file"]
 
-    console.print(f"[bold cyan]🥇 Starting Gold Analytics & Lakehouse Pipeline[/bold cyan]")
+    console.print("[bold cyan]🥇 Starting Gold Analytics & Lakehouse Pipeline[/bold cyan]")
     console.print(f"📥 Reading Silver from: [yellow]{s_dir}[/yellow]")
     console.print(f"💾 Gold Parquet Storage: [yellow]{g_dir}[/yellow]")
     console.print(f"🦆 DuckDB Database: [yellow]{db_file}[/yellow]\n")

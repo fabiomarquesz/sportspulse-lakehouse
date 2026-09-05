@@ -1,22 +1,25 @@
 """
 Unit tests for Silver layer cleaning and phase alignment.
 """
+
 import polars as pl
-import pytest
+
+from sportspulse.processing.phase_aligner import align_telemetry_with_phases, categorize_phase
 from sportspulse.processing.signal_cleaner import SignalCleaner
-from sportspulse.processing.phase_aligner import categorize_phase, align_telemetry_with_phases
 
 
 def test_signal_cleaner_filtering():
-    df = pl.DataFrame({
-        "sport_code": ["RUN", "RUN", "RUN"],
-        "subject_id": ["S1", "S1", "S1"],
-        "session_id": ["CRD1", "CRD1", "CRD1"],
-        "time_sec": [0, 1, 2],
-        "hr_bpm": [20.0, 150.0, 260.0],  # 20 and 260 are invalid
-        "br_rpm": [15.0, 2.0, 20.0],      # 2 is invalid
-        "rr_ms": [100.0, 800.0, 2500.0],  # 100 and 2500 are invalid
-    })
+    df = pl.DataFrame(
+        {
+            "sport_code": ["RUN", "RUN", "RUN"],
+            "subject_id": ["S1", "S1", "S1"],
+            "session_id": ["CRD1", "CRD1", "CRD1"],
+            "time_sec": [0, 1, 2],
+            "hr_bpm": [20.0, 150.0, 260.0],  # 20 and 260 are invalid
+            "br_rpm": [15.0, 2.0, 20.0],  # 2 is invalid
+            "rr_ms": [100.0, 800.0, 2500.0],  # 100 and 2500 are invalid
+        }
+    )
 
     cleaner = SignalCleaner(hr_min=30, hr_max=240, br_min=4, br_max=80, rr_min=250, rr_max=2000)
     cleaned = cleaner.clean_telemetry(df)
@@ -37,29 +40,33 @@ def test_phase_categorization():
 
 
 def test_align_telemetry_with_phases():
-    df_telemetry = pl.DataFrame({
-        "sport_code": ["CRO", "CRO", "CRO"],
-        "subject_id": ["S1", "S1", "S1"],
-        "session_id": ["CRD1", "CRD1", "CRD1"],
-        "time_sec": [10, 70, 150],
-        "hr_bpm": [70.0, 140.0, 80.0],
-        "br_rpm": [12.0, 30.0, 14.0],
-        "rr_ms": [850.0, 420.0, 750.0],
-    })
+    df_telemetry = pl.DataFrame(
+        {
+            "sport_code": ["CRO", "CRO", "CRO"],
+            "subject_id": ["S1", "S1", "S1"],
+            "session_id": ["CRD1", "CRD1", "CRD1"],
+            "time_sec": [10, 70, 150],
+            "hr_bpm": [70.0, 140.0, 80.0],
+            "br_rpm": [12.0, 30.0, 14.0],
+            "rr_ms": [850.0, 420.0, 750.0],
+        }
+    )
 
-    df_phases = pl.DataFrame({
-        "sport_code": ["CRO", "CRO"],
-        "subject_id": ["S1", "S1"],
-        "session_id": ["CRD1", "CRD1"],
-        "phase_name": ["WU", "WOD"],
-        "start_time_str": ["00:00:00", "00:01:00"],
-        "end_time_str": ["00:01:00", "00:03:00"],
-        "start_time_sec": [0, 60],
-        "end_time_sec": [60, 180],
-        "duration_sec": [60, 120],
-        "is_active": [True, True],
-        "notes": ["Warmup", "Workout of the day"],
-    })
+    df_phases = pl.DataFrame(
+        {
+            "sport_code": ["CRO", "CRO"],
+            "subject_id": ["S1", "S1"],
+            "session_id": ["CRD1", "CRD1"],
+            "phase_name": ["WU", "WOD"],
+            "start_time_str": ["00:00:00", "00:01:00"],
+            "end_time_str": ["00:01:00", "00:03:00"],
+            "start_time_sec": [0, 60],
+            "end_time_sec": [60, 180],
+            "duration_sec": [60, 120],
+            "is_active": [True, True],
+            "notes": ["Warmup", "Workout of the day"],
+        }
+    )
 
     aligned = align_telemetry_with_phases(df_telemetry, df_phases)
     assert "phase_name" in aligned.columns
