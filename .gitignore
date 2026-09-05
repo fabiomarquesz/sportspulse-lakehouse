@@ -1,0 +1,68 @@
+# Python & Environment
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# UV
+.uv/
+
+# Environment Variables
+.env
+.env.local
+
+# IDE & Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Data Directory (Medallion Lakehouse Local Storage)
+data/01_raw/*
+data/02_bronze/*
+data/03_silver/*
+data/04_gold/*
+!data/01_raw/.gitkeep
+!data/02_bronze/.gitkeep
+!data/03_silver/.gitkeep
+!data/04_gold/.gitkeep
+
+# Database & DuckDB files
+*.duckdb
+*.duckdb.wal
+*.db
+*.sqlite3
+
+# Logs and testing
+*.log
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+*-checkpoint.ipynb

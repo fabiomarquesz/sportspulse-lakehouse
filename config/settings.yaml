@@ -1,0 +1,23 @@
+# SportsPulse Lakehouse Settings
+project_name: "SportsPulse"
+version: "0.1.0"
+
+paths:
+  raw_source_dir: "/mnt/dados/Downloads/SportDB"
+  bronze_dir: "data/02_bronze"
+  silver_dir: "data/03_silver"
+  gold_dir: "data/04_gold"
+  database_file: "data/04_gold/sportspulse.duckdb"
+
+sampling_rates:
+  ecg_hz: 250
+  hr_hz: 1
+  br_hz: 1
+
+signal_thresholds:
+  hr_min_bpm: 30
+  hr_max_bpm: 240
+  br_min_rpm: 4
+  br_max_rpm: 80
+  rr_min_ms: 250
+  rr_max_ms: 2000

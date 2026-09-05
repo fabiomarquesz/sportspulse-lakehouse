@@ -1,0 +1,41 @@
+sports:
+  AER:
+    name: "Aerial Silks"
+    category: "Acrobatic / Strength"
+    description: "Tecido Acrobático e artes circenses aéreas"
+  BAS:
+    name: "Basketball"
+    category: "Team Sport / High-Intensity Intermittent"
+    description: "Basquete competitivo ou treino estruturado"
+  CRO:
+    name: "CrossFit"
+    category: "High-Intensity Functional Training (HIFT)"
+    description: "Treinamento funcional de alta intensidade"
+  FIT:
+    name: "Fitness / Strength"
+    category: "Resistance / Hypertrophy"
+    description: "Musculação e condicionamento físico geral"
+  JOG:
+    name: "Jogging"
+    category: "Aerobic / Continuous Moderate"
+    description: "Corrida leve e contínua de baixa/média intensidade"
+  MID:
+    name: "Middle-Distance Running"
+    category: "Aerobic / High-Intensity Continuous"
+    description: "Corrida de média distância (800m a 5000m)"
+  RUN:
+    name: "Running"
+    category: "Aerobic / Endurance"
+    description: "Corrida contínua de longa distância"
+  SOC:
+    name: "Soccer"
+    category: "Team Sport / Intermittent Endurance"
+    description: "Futebol de campo / treino com bola e movimentação tática"
+  TEN:
+    name: "Tennis"
+    category: "Racket Sport / High-Intensity Intermittent"
+    description: "Tênis de quadra com ralis e pausas intermitentes"
+  ZUM:
+    name: "Zumba"
+    category: "Aerobic / Dance Fitness"
+    description: "Dança aeróbica de ritmo variado"
