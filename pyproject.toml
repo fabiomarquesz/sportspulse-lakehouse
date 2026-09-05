@@ -43,3 +43,8 @@ python_files = ["test_*.py"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sportspulse"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
