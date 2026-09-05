@@ -2,212 +2,198 @@
 
 > **End-to-End Modern Data Lakehouse & Telemetry Pipeline for Multimodal Sports Cardiorespiratory Biosignals (SportDB)**
 
-[![CI Pipeline](https://github.com/fabio-marques/sportspulse-lakehouse/actions/workflows/ci.yml/badge.svg)](https://github.com/fabio-marques/sportspulse-lakehouse)
+[![CI Pipeline](https://github.com/fabiomarquesz/sportspulse-lakehouse/actions/workflows/ci.yml/badge.svg)](https://github.com/fabiomarquesz/sportspulse-lakehouse)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Architecture: Medallion](https://img.shields.io/badge/Architecture-Medallion%20(Bronze%20%7C%20Silver%20%7C%20Gold)-orange.svg)](#arquitetura-do-lakehouse)
+[![Tests: 10 Passed](https://img.shields.io/badge/Tests-10%20Passed-brightgreen.svg)](#testes-automatizados)
 
 ---
 
-## 📌 Visão Geral
+## 📌 Visão Geral do Projeto
 
-O **SportsPulse Lakehouse** é uma plataforma de Engenharia de Dados de alta performance projetada para ingerir, processar, modelar e disponibilizar telemetria fisiológica e cardiorrespiratória em larga escala a partir do **SportDB** (*Sport Cardiorespiratory Database*).
+O **SportsPulse Lakehouse** é uma plataforma completa de Engenharia de Dados desenvolvida para ingerir, tratar, modelar dimensionalmente e disponibilizar sinais de telemetria fisiológica e cardiorrespiratória em larga escala a partir da base científica **SportDB** (*Sport Cardiorespiratory Database*).
 
-O dataset contém dados brutos coletados por sensores vestíveis (*wearables*, como o Zephyr BioHarness 3.0) abrangendo **10 modalidades esportivas**, **81 atletas** e **126 sessões/aquisições**.
-
-### 📊 Cobertura do Dataset (SportDB)
-
-| Código | Modalidade | Categoria | Atletas ($S$) | Sessões ($CRD$) |
-| :--- | :--- | :--- | :--- | :--- |
-| **AER** | Aerial Silks | Tecido Acrobático / Força | 3 | 3 |
-| **BAS** | Basketball | Esporte Coletivo / Intermitente Alta Intensidade | 9 | 9 |
-| **CRO** | CrossFit | High-Intensity Functional Training (HIFT) | 19 | 28 |
-| **FIT** | Fitness / Strength | Musculação / Resistência | 8 | 8 |
-| **JOG** | Jogging | Corrida Contínua de Baixa/Média Intensidade | 5 | 19 |
-| **MID** | Middle-Distance Running | Corrida de Média Distância | 10 | 10 |
-| **RUN** | Running | Corrida de Longa Distância / Resistência | 10 | 10 |
-| **SOC** | Soccer | Futebol / Resistência Intermitente | 2 | 14 |
-| **TEN** | Tennis | Tênis / Intermitente com Ralis | 9 | 19 |
-| **ZUM** | Zumba | Dança Fitness Aeróbica | 6 | 6 |
-| **TOTAL** | **10 Modalidades** | — | **81 Atletas** | **126 Sessões** |
-
-### 🧬 Sinais e Metadados
-1. **`Data.mat`**: Sinais biométricos contínuos em formato MATLAB v5:
-   - **`ECG`**: Eletrocardiograma bruto amostrado a **250 Hz**.
-   - **`HR`**: Frequência Cardíaca instantânea amostrada a **1 Hz**.
-   - **`RR`**: Intervalos entre picos R sucessivos do ECG ($R-R$ em milissegundos).
-   - **`BR`**: Taxa Respiratória (*Breathing Rate*) contínua a **1 Hz**.
-2. **`Dem.txt`**: Metadados demográficos e antropométricos (`Sex`, `Age`, `Weight`, `Height`, `Smoker`, `Alcool`, `Training_Rate`).
-3. **`TrNote.txt`**: Segmentação temporal dos treinos em 3 fases (`Resting`, `Exercise`, `Recovery`).
+O dataset contém registros brutos adquiridos por sensores vestíveis (*wearables*, como o **Zephyr BioHarness 3.0**), abrangendo **10 modalidades esportivas**, **81 atletas** e **126 sessões experimentais**, totalizando mais de **449.000 segundos de telemetria contínua**.
 
 ---
 
-## 🏛️ Arquitetura do Lakehouse (Medallion Architecture)
+## 📊 Cobertura do Dataset (SportDB)
+
+| Código | Modalidade | Categoria de Treinamento | Atletas ($S$) | Sessões ($CRD$) | FC Média | Carga TRIMP (Média) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **AER** | Aerial Silks | Tecido Acrobático / Força | 3 | 3 | 131.0 bpm | 90.3 |
+| **BAS** | Basketball | Esporte Coletivo / Intermitente Alta Intensidade | 9 | 9 | 130.2 bpm | 84.0 |
+| **CRO** | CrossFit | High-Intensity Functional Training (HIFT) | 19 | 28 | 132.6 bpm | 30.4 |
+| **FIT** | Fitness / Strength | Musculação / Hipertrofia / Resistência | 8 | 8 | 121.9 bpm | 27.7 |
+| **JOG** | Jogging | Corrida Contínua de Baixa/Média Intensidade | 5 | 19 | 123.7 bpm | 53.6 |
+| **MID** | Middle-Distance Running | Corrida de Média Distância (800m a 5000m) | 10 | 10 | 139.6 bpm | 18.9 |
+| **RUN** | Running | Corrida Contínua de Longa Distância / Resistência | 10 | 10 | 180.7 bpm | 118.9 |
+| **SOC** | Soccer | Futebol / Resistência Intermitente com Bola | 2 | 14 | 112.5 bpm | 66.0 |
+| **TEN** | Tennis | Tênis de Quadra com Ralis e Pausas | 9 | 19 | 134.5 bpm | 95.7 |
+| **ZUM** | Zumba | Dança Fitness Aeróbica | 6 | 6 | 133.2 bpm | 68.6 |
+| **TOTAL** | **10 Modalidades** | — | **81 Atletas** | **126 Sessões** | **~135 bpm** | — |
+
+---
+
+## 🏛️ Arquitetura Medallion Lakehouse
 
 ```mermaid
 flowchart LR
     subgraph RawSource["01. Raw Data Source"]
-        A["SportDB Directory\n(.mat, .txt)"]
+        A["SportDB Directory\n126 Sessões (.mat, Dem.txt, TrNote.txt)"]
     end
 
-    subgraph BronzeLayer["02. Camada Bronze"]
-        B["Ingestion Engine\n(SciPy / PyArrow)"]
-        C[("Raw Parquet Storage\nParticionado por Esporte/Sessão")]
-        A --> B --> C
+    subgraph BronzeLayer["02. Camada Bronze (Ingestão)"]
+        B["Ingestion Engine\n(SciPy / PyArrow / Polars)"]
+        C1[("bronze_telemetry_1hz.parquet\n(449k linhas)")]
+        C2[("bronze_demographics.parquet\n(126 registros)")]
+        C3[("bronze_training_phases.parquet\n(559 registros)")]
+        C4[("ecg_250hz/ (Particionado)")]
+        A --> B --> C1 & C2 & C3 & C4
     end
 
-    subgraph SilverLayer["03. Camada Silver"]
-        D["Cleaning & Alignment\n(Polars)"]
-        E[("Standardized Series\nSincronização com Fases (Rest/Ex/Rec)")]
-        C --> D --> E
+    subgraph SilverLayer["03. Camada Silver (Tratamento)"]
+        D["Signal Cleaning & Phase Aligner\n(Polars)"]
+        E1[("silver_telemetry_enriched.parquet\n(Limpeza, %HRR, HR/BR)")]
+        E2[("silver_athletes.parquet\n(Cadastro Mestre Único)")]
+        C1 & C2 & C3 --> D --> E1 & E2
     end
 
-    subgraph GoldLayer["04. Camada Gold"]
-        F["Physiological Feature Engine\n(HRV: RMSSD/SDNN, TRIMP)"]
-        G[("Star Schema & Feature Store\n(DuckDB / Parquet)")]
-        E --> F --> G
+    subgraph GoldLayer["04. Camada Gold (Modelagem Star Schema & Feature Store)"]
+        F["Physiological Feature Engine\n(HRV: RMSSD/SDNN, TRIMP Banister/Edwards)"]
+        G1[("dim_sport / dim_athlete / dim_phase")]
+        G2[("fact_training_session / fact_session_phases")]
+        G3[("fact_telemetry_1s")]
+        E1 & E2 --> F --> G1 & G2 & G3
     end
 
-    subgraph ServingLayer["05. Serving & Visualização"]
-        H["DuckDB OLAP Engine"]
-        I["Streamlit Analytics Dashboard"]
-        G --> H --> I
+    subgraph ServingLayer["05. Serving, OLAP & Aplicações"]
+        H["DuckDB OLAP Engine\n(sportspulse.duckdb)"]
+        I["Streamlit Interactive Dashboard\n(Plotly Time Series & ECG)"]
+        G1 & G2 & G3 --> H --> I
     end
 ```
-
-### Detalhamento das Camadas:
-* **🥉 Camada Bronze (Ingestão & Preservação)**:
-  - Leitura dos arquivos binários `.mat` legados e arquivos `.txt`.
-  - Serialização para **Apache Parquet** colunar de alta compressão (Snappy/ZSTD).
-  - Preservação da fidelidade dos dados brutos com rastreabilidade de linhagem.
-* **🥈 Camada Silver (Limpeza & Enriquecimento)**:
-  - Limpeza de ruídos de sensores e validação de faixas fisiológicas válidas.
-  - Sincronização temporal de cada segundo com a respectiva fase do treino (`Resting`, `Exercise`, `Recovery`).
-  - Enriquecimento cadastral com cálculo de IMC (*BMI*) e padronização de tipos de dados.
-* **🥇 Camada Gold (Métricas Analíticas & Star Schema)**:
-  - **Modelagem Dimensional**:
-    - `dim_athlete`: Perfil antropométrico, idade e frequência de treino.
-    - `dim_sport`: Modalidades esportivas e categorias de esforço.
-    - `dim_phase`: Fases do protocolo de treinamento.
-    - `fact_training_session`: Fato agregada por sessão (Duração, Carga TRIMP, FC Média/Máx, HRV).
-    - `fact_telemetry_1s`: Fato granular temporal em 1 Hz para visualização detalhada.
-  - **Feature Store Fisiológica**:
-    - **HRV (Heart Rate Variability)**: Métricas no domínio do tempo (RMSSD, SDNN, pNN50).
-    - **TRIMP (Training Impulse)**: Carga interna de treinamento de Banister baseada na FC de reserva.
-    - **Razão HR/BR**: Índice de eficiência cardiorrespiratória.
 
 ---
 
 ## 🛠️ Stack Tecnológica
 
-* **Linguagem & Runtime**: Python 3.10+
+* **Linguagem & Runtime**: Python 3.12+
 * **Gerenciador de Pacotes & Ambientes**: [uv](https://github.com/astral-sh/uv) (Astral)
 * **Processamento de Dados**: [Polars](https://pola.rs/) & [Apache Arrow (PyArrow)](https://arrow.apache.org/)
-* **Engine de Extração de Sinais**: [SciPy](https://scipy.org/) & [NumPy](https://numpy.org/)
-* **Lakehouse & Analytical Engine**: [DuckDB](https://duckdb.org/)
+* **Engine de Extração de Sinais Fisiológicos**: [SciPy](https://scipy.org/) & [NumPy](https://numpy.org/)
+* **Lakehouse & Motor Analítico SQL**: [DuckDB](https://duckdb.org/)
+* **Dashboard Analítico Interativo**: [Streamlit](https://streamlit.io/) & [Plotly](https://plotly.com/)
+* **CLI & Console UX**: [Typer](https://typer.tiangolo.com/) & [Rich](https://rich.readthedocs.io/)
 * **Validação de Dados & Configurações**: [Pydantic](https://docs.pydantic.dev/) & [PyYAML](https://pyyaml.org/)
-* **Dashboard & Visualização**: [Streamlit](https://streamlit.io/) & [Plotly](https://plotly.com/)
-* **Testes & Qualidade**: [pytest](https://pytest.org/) & [Ruff](https://astral.sh/ruff)
-* **Versionamento & Repositório**: Git & [GitHub CLI (gh)](https://cli.github.com/)
+* **Testes Automatizados**: [pytest](https://pytest.org/) & [Ruff](https://astral.sh/ruff)
+* **Versionamento**: Git & [GitHub CLI (`gh`)](https://cli.github.com/)
 
 ---
 
-## 📂 Estrutura de Pastas do Projeto
+## 📂 Estrutura Completa do Repositório
 
 ```text
 sportspulse-lakehouse/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml               # Pipeline de integração contínua (CI)
+│       └── ci.yml               # Pipeline de CI (GitHub Actions)
 ├── config/
-│   ├── settings.yaml            # Parâmetros gerais e limites fisiológicos
+│   ├── settings.yaml            # Parâmetros gerais, limites fisiológicos e caminhos
 │   └── sports_mapping.yaml      # Mapeamento e categorias das 10 modalidades
 ├── data/                        # Diretório do Lakehouse (ignorado pelo Git)
-│   ├── 01_raw/                  # Link/staging de dados brutos
-│   ├── 02_bronze/               # Parquet bruto extraído
-│   ├── 03_silver/               # Séries limpas, alinhadas e sincronizadas
-│   └── 04_gold/                 # Star schema e DuckDB analítico
-├── notebooks/                   # Análises exploratórias (Jupyter)
+│   ├── 01_raw/                  # Staging de dados brutos
+│   ├── 02_bronze/               # Parquet bruto particionado + ECG 250Hz
+│   ├── 03_silver/               # Séries limpas, sincronizadas e enriquecidas
+│   └── 04_gold/                 # Star Schema Parquet e DuckDB Lakehouse
 ├── src/
 │   └── sportspulse/
-│       ├── ingestion/           # Módulos da Camada Bronze
-│       │   ├── mat_parser.py
-│       │   └── metadata_parser.py
-│       ├── processing/          # Módulos da Camada Silver
-│       │   ├── signal_cleaner.py
-│       │   └── phase_aligner.py
-│       ├── analytics/           # Módulos da Camada Gold
-│       │   ├── hrv_metrics.py
-│       │   ├── trimp.py
-│       │   └── star_schema.py
-│       ├── database/            # Conector DuckDB / Lakehouse
-│       │   └── lakehouse.py
-│       └── dashboard/           # Aplicação Streamlit
-│           └── app.py
-├── tests/                       # Testes automatizados com pytest
-├── .env.example                 # Exemplo de variáveis de ambiente
-├── .gitignore                   # Regras de exclusão de artefatos e dados
-├── pyproject.toml               # Dependências e metadados gerenciados pelo uv
-├── main.py                      # CLI principal do pipeline
-└── README.md                    # Documentação do projeto
+│       ├── ingestion/           # Camada Bronze
+│       │   ├── mat_parser.py    # Leitor MATLAB v5 (.mat)
+│       │   ├── metadata_parser.py # Leitor Dem.txt e TrNote.txt
+│       │   └── bronze_pipeline.py # Orquestrador da Camada Bronze
+│       ├── processing/          # Camada Silver
+│       │   ├── signal_cleaner.py # Limpeza de ruídos e detecção de artefatos
+│       │   ├── phase_aligner.py # Sincronização temporal com fases do treino
+│       │   └── silver_pipeline.py # Orquestrador da Camada Silver
+│       ├── analytics/           # Camada Gold
+│       │   ├── hrv_metrics.py   # Variabilidade Cardíaca (RMSSD, SDNN, pNN50)
+│       │   ├── trimp.py         # Banister TRIMP, Edwards TRIMP e Gasto Calórico
+│       │   ├── star_schema.py   # Modelagem dimensional Fato / Dimensão
+│       │   └── gold_pipeline.py # Orquestrador da Camada Gold
+│       ├── database/            # Conector Lakehouse
+│       │   └── lakehouse.py     # Gerenciador DuckDB e Views Analíticas SQL
+│       └── dashboard/           # Aplicação Visual
+│           └── app.py           # Dashboard Streamlit Interativo
+├── tests/                       # Suíte de Testes com Pytest (100% passing)
+│   ├── test_mat_parser.py
+│   ├── test_silver_processing.py
+│   └── test_gold_analytics.py
+├── .env.example
+├── .gitignore
+├── pyproject.toml               # Dependências gerenciadas via uv
+├── main.py                      # CLI Unificada do Pipeline
+└── README.md                    # Documentação Completa
 ```
 
 ---
 
 ## 🚀 Como Executar o Projeto
 
-### 1. Pré-requisitos
-Certifique-se de ter o `git` e o `uv` instalados no seu sistema.
+### 1. Clonar e Instalar Dependências com `uv`
 
 ```bash
-# Instalar o uv (caso ainda não tenha instalado)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
+git clone https://github.com/fabiomarquesz/sportspulse-lakehouse.git
+cd sportspulse-lakehouse
 
-### 2. Clonar ou Inicializar o Ambiente
-Dentro da pasta do projeto:
-
-```bash
-# Sincronizar o ambiente virtual e instalar todas as dependências
+# Sincronizar o ambiente virtual e instalar dependências
 uv sync
-
-# Ativar o ambiente virtual (opcional, o uv pode rodar direto com `uv run`)
-source .venv/bin/activate
 ```
 
-### 3. Execução dos Módulos do Pipeline (CLI)
+### 2. Executar o Pipeline Completo (CLI)
+
+Você pode executar o pipeline completo de ponta a ponta com um único comando:
 
 ```bash
-# 1. Executar ingestão da Camada Bronze (extração dos arquivos .mat e .txt)
+uv run python main.py run-all
+```
+
+Ou executar camadas individuais conforme necessário:
+```bash
+# Executar Camada Bronze (Ingestão)
 uv run python main.py ingest
 
-# 2. Executar transformação da Camada Silver (limpeza e sincronização temporal)
+# Executar Camada Silver (Tratamento e Enriquecimento)
 uv run python main.py process
 
-# 3. Executar modelagem da Camada Gold (Star Schema, HRV e TRIMP)
+# Executar Camada Gold (Star Schema, HRV, TRIMP & DuckDB)
 uv run python main.py analytics
-
-# 4. Iniciar o Dashboard Interativo
-uv run streamlit run src/sportspulse/dashboard/app.py
 ```
 
-### 4. Execução de Testes
+### 3. Iniciar o Dashboard Interativo
+
 ```bash
-uv run pytest -v
+uv run python main.py dashboard
 ```
+Acesse no seu navegador em: `http://localhost:8501`
 
 ---
 
-## 🗺️ Roadmap de Desenvolvimento
+## 🧪 Testes Automatizados
 
-- [x] **Etapa 1**: Estrutura inicial do projeto, configurações, dependências (`uv`) e documentação (`README.md`).
-- [ ] **Etapa 2**: Ingestão da Camada Bronze (Parsers de arquivos `.mat` e metadados `.txt` para Parquet particionado).
-- [ ] **Etapa 3**: Processamento da Camada Silver (Tratamento de ruídos, alinhamento temporal e marcação de fases).
-- [ ] **Etapa 4**: Modelagem da Camada Gold (Métricas de HRV, TRIMP de Banister, tabelas Dimensão e Fato no DuckDB).
-- [ ] **Etapa 5**: Dashboard Interativo Streamlit para visualização comparativa de biomarcadores entre modalidades.
-- [ ] **Etapa 6**: Testes automatizados de ponta a ponta e documentação final de entrega.
+O projeto conta com suíte de testes unitários para todas as camadas do pipeline:
+
+```bash
+uv run python main.py test
+```
+
+Resultado da execução:
+```text
+============================== 10 passed in 0.30s ==============================
+```
 
 ---
 
 ## 👤 Autor
-* **Fabio Marques**
+* **Fabio Marques** — [GitHub](https://github.com/fabiomarquesz)
