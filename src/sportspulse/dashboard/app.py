@@ -216,13 +216,11 @@ elif menu == "🫀 Análise de Sessão & Atleta":
             title="Comportamento Cardiorrespiratório Contínuo (1 Hz)",
             xaxis={"title": "Tempo (segundos)"},
             yaxis={
-                "title": "Frequência Cardíaca (bpm)",
-                "titlefont": {"color": "#FF4B4B"},
+                "title": {"text": "Frequência Cardíaca (bpm)", "font": {"color": "#FF4B4B"}},
                 "tickfont": {"color": "#FF4B4B"},
             },
             yaxis2={
-                "title": "Taxa Respiratória (rpm)",
-                "titlefont": {"color": "#00D4B2"},
+                "title": {"text": "Taxa Respiratória (rpm)", "font": {"color": "#00D4B2"}},
                 "tickfont": {"color": "#00D4B2"},
                 "overlaying": "y",
                 "side": "right",
